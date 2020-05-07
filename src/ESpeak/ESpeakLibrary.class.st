@@ -51,6 +51,11 @@ ESpeakLibrary class >> reset [
 ]
 
 { #category : #'as yet unclassified' }
+ESpeakLibrary >> espeak_GetCurrentVoice [
+	self ffiCall: 'Espeak_VOICE * espeak_GetCurrentVoice()'
+]
+
+{ #category : #'as yet unclassified' }
 ESpeakLibrary >> espeak_InitializeWithOuput: output bufLength: buflength path: path andOptions: options [
 	" Must be called before any synthesis functions are called.
    output: the audio data can either be played by eSpeak or passed back by the SynthCallback function.
