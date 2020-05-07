@@ -89,7 +89,7 @@ ESpeakLibrary >> espeak_Key: keyName [
 
 { #category : #'as yet unclassified' }
 ESpeakLibrary >> espeak_SetSynthCallback: aSynthCallback [
-	self ffiCall: 'void espeak_SetSynthCallback(void * aSynthCallback)'
+	self ffiCall: 'void espeak_SetSynthCallback(ESpeakSynthCallback aSynthCallback)'
 ]
 
 { #category : #'as yet unclassified' }
