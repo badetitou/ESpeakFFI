@@ -6,7 +6,7 @@ Class {
 
 { #category : #'instance creation' }
 ESpeakSynthCallback class >> fnSpec [
-	^ #(int #(short * wav , int numsamples , void * events))
+	^ #(int #(short * wav , int numsamples , Espeak_EVENT * events))
 ]
 
 { #category : #'instance creation' }
