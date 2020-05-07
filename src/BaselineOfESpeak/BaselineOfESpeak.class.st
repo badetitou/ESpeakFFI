@@ -24,5 +24,5 @@ BaselineOfESpeak >> defineGroups: spec [
 
 { #category : #baselines }
 BaselineOfESpeak >> definePackages: spec [
-	spec package: 'VLC' with: [ spec requires: #('ESpeak') ]
+	spec package: 'ESpeak'
 ]
