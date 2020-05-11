@@ -47,10 +47,33 @@ ESpeakLibrary class >> espeakINITIALIZE_PHONEME_IPA [
 	^ 16r0002
 ]
 
+{ #category : #'as yet unclassified' }
+ESpeakLibrary class >> initialize [
+	"reset me when startup"
+	Smalltalk addToStartUpList: self.
+]
+
 { #category : #initialization }
 ESpeakLibrary class >> reset [
 	<script>
 	uniqueInstance := nil
+]
+
+{ #category : #api }
+ESpeakLibrary class >> say: aString [
+	| text |
+	text := aString encodeWith: #utf8.
+
+	self uniqueInstance
+		espeak_SynthText: text
+		size: text size
+		position: 0
+		positionType: Espeak_POSITION_TYPE POS_CHARACTER
+		endPosition: 0
+		flags: ESpeakLibrary espeakCHARS_AUTO
+		uniqueIdentifier: nil
+		userData: nil.
+	self uniqueInstance espeak_Synchronize
 ]
 
 { #category : #'as yet unclassified' }
