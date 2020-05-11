@@ -1,89 +1,94 @@
 Class {
-	#name : #ESpeakLibrary,
+	#name : #EspeakLibrary,
 	#superclass : #FFILibrary,
 	#instVars : [
 		'cb'
 	],
+	#classInstVars : [
+		'isInitialized'
+	],
 	#category : #'ESpeak-Library'
 }
 
+{ #category : #accessing }
+EspeakLibrary class >> beInitialized [
+	self isInitialized: true
+]
+
 { #category : #'as yet unclassified' }
-ESpeakLibrary class >> espeakCHARS_16BIT [
+EspeakLibrary class >> espeakCHARS_16BIT [
 	^ 4
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary class >> espeakCHARS_8BIT [
+EspeakLibrary class >> espeakCHARS_8BIT [
 	^ 2
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary class >> espeakCHARS_AUTO [
+EspeakLibrary class >> espeakCHARS_AUTO [
 	^ 0
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary class >> espeakCHARS_UTF8 [
+EspeakLibrary class >> espeakCHARS_UTF8 [
 	^ 1
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary class >> espeakCHARS_WCHAR [
+EspeakLibrary class >> espeakCHARS_WCHAR [
 	^ 3
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary class >> espeakINITIALIZE_DONT_EXIT [
+EspeakLibrary class >> espeakINITIALIZE_DONT_EXIT [
 	^ 16r8000
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary class >> espeakINITIALIZE_PHONEME_EVENTS [
+EspeakLibrary class >> espeakINITIALIZE_PHONEME_EVENTS [
 	^ 16r0001
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary class >> espeakINITIALIZE_PHONEME_IPA [
+EspeakLibrary class >> espeakINITIALIZE_PHONEME_IPA [
 	^ 16r0002
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary class >> initialize [
+EspeakLibrary class >> initialize [
 	"reset me when startup"
 	Smalltalk addToStartUpList: self.
+	isInitialized := false
+]
+
+{ #category : #accessing }
+EspeakLibrary class >> isInitialized [
+	^ isInitialized
+]
+
+{ #category : #accessing }
+EspeakLibrary class >> isInitialized: anObject [
+	isInitialized := anObject
 ]
 
 { #category : #initialization }
-ESpeakLibrary class >> reset [
+EspeakLibrary class >> reset [
 	<script>
 	uniqueInstance := nil
 ]
 
-{ #category : #api }
-ESpeakLibrary class >> say: aString [
-	| text |
-	text := aString encodeWith: #utf8.
-
-	self uniqueInstance
-		espeak_SynthText: text
-		size: text size
-		position: 0
-		positionType: Espeak_POSITION_TYPE POS_CHARACTER
-		endPosition: 0
-		flags: ESpeakLibrary espeakCHARS_AUTO
-		uniqueIdentifier: nil
-		userData: nil.
-	self uniqueInstance espeak_Synchronize
+{ #category : #'as yet unclassified' }
+EspeakLibrary class >> startUp: isImageStarting [
+	isImageStarting
+		ifTrue: [ "only call during the start up"
+			isInitialized := false.
+			"might be call by the user"
+			self reset ]
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary class >> startUp: isImageStarting [
-
-	isImageStarting ifTrue: [ self reset ]
-]
-
-{ #category : #'as yet unclassified' }
-ESpeakLibrary >> espeak_Cancel [
+EspeakLibrary >> espeak_Cancel [
 	"Stop immediately synthesis and audio output of the current text. When this
    function returns, the audio output is fully stopped and the synthesizer is ready to
    synthesize a new message.
@@ -96,7 +101,7 @@ ESpeakLibrary >> espeak_Cancel [
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary >> espeak_Char: character [
+EspeakLibrary >> espeak_Char: character [
 	"Speak the name of the given character
 
    Return: EE_OK: operation achieved
@@ -108,12 +113,12 @@ ESpeakLibrary >> espeak_Char: character [
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary >> espeak_GetCurrentVoice [
+EspeakLibrary >> espeak_GetCurrentVoice [
 	self ffiCall: 'Espeak_VOICE * espeak_GetCurrentVoice(void)'
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary >> espeak_InitializeWithOuput: output bufLength: buflength path: path andOptions: options [
+EspeakLibrary >> espeak_InitializeWithOuput: output bufLength: buflength path: path andOptions: options [
 	" Must be called before any synthesis functions are called.
    output: the audio data can either be played by eSpeak or passed back by the SynthCallback function.
 
@@ -133,14 +138,14 @@ ESpeakLibrary >> espeak_InitializeWithOuput: output bufLength: buflength path: p
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary >> espeak_IsPlaying [
+EspeakLibrary >> espeak_IsPlaying [
 "/* Returns true if audio is played, false otherwise.
 */"
 	self ffiCall: 'Boolean espeak_IsPlaying(void)'
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary >> espeak_Key: key_name [
+EspeakLibrary >> espeak_Key: key_name [
 	"Speak the name of a keyboard key.
    If key_name is a single character, it speaks the name of the character.
    Otherwise, it speaks key_name as a text string.
@@ -154,7 +159,7 @@ ESpeakLibrary >> espeak_Key: key_name [
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary >> espeak_ListVoices: voice_spec [
+EspeakLibrary >> espeak_ListVoices: voice_spec [
 	"Reads the voice files from espeak-data/voices and creates an array of espeak_VOICE pointers.
    The list is terminated by a NULL pointer
 
@@ -166,12 +171,12 @@ ESpeakLibrary >> espeak_ListVoices: voice_spec [
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary >> espeak_SetSynthCallback: aSynthCallback [
+EspeakLibrary >> espeak_SetSynthCallback: aSynthCallback [
 	self ffiCall: 'void espeak_SetSynthCallback(ESpeakSynthCallback aSynthCallback)'
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary >> espeak_SetVoiceByName: name [
+EspeakLibrary >> espeak_SetVoiceByName: name [
 "/* Searches for a voice with a matching 'name' field.  Language is not considered.
    'name' is a UTF8 string.
 
@@ -185,7 +190,7 @@ ESpeakLibrary >> espeak_SetVoiceByName: name [
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary >> espeak_Synchronize [
+EspeakLibrary >> espeak_Synchronize [
 	"This function returns when all data have been spoken.
    Return: EE_OK: operation achieved
 	   EE_INTERNAL_ERROR."
@@ -194,7 +199,7 @@ ESpeakLibrary >> espeak_Synchronize [
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary >> espeak_SynthText: text size: size position: position positionType: espeak_POSITION_TYPE endPosition: endPosition flags: flags uniqueIdentifier: uniqueIdentifier userData: userData [
+EspeakLibrary >> espeak_SynthText: text size: size position: position positionType: espeak_POSITION_TYPE endPosition: endPosition flags: flags uniqueIdentifier: uniqueIdentifier userData: userData [
 	self
 		ffiCall:
 			'Espeak_ERROR espeak_Synth(String * text,
@@ -208,27 +213,29 @@ ESpeakLibrary >> espeak_SynthText: text size: size position: position positionTy
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary >> espeak_Terminate [
+EspeakLibrary >> espeak_Terminate [
 	"last function to be called."
 	self ffiCall: 'Espeak_ERROR espeak_Terminate(void)'
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary >> initialize [
+EspeakLibrary >> initialize [
 	super initialize.
-	self
-		espeak_InitializeWithOuput: Espeak_AUDIO_OUTPUT AUDIO_OUTPUT_PLAYBACK
-		bufLength: 0
-		path: nil
-		andOptions: 0.
+	self class isInitialized
+		ifFalse: [ self
+				espeak_InitializeWithOuput: Espeak_AUDIO_OUTPUT AUDIO_OUTPUT_PLAYBACK
+				bufLength: 0
+				path: nil
+				andOptions: 0.
 
 
-	cb := ESpeakSynthCallback on: [ :a :b :c | 0 ].
-	self espeak_SetSynthCallback: cb
+			cb := ESpeakSynthCallback on: [ :a :b :c | 0 ].
+			self espeak_SetSynthCallback: cb.
+			self class beInitialized ]
 ]
 
 { #category : #'accessing platform' }
-ESpeakLibrary >> unix64LibraryName [
+EspeakLibrary >> unix64LibraryName [
 	#('/usr/lib/i386-linux-gnu' '/usr/lib' '/usr/lib32') , ((OSEnvironment current at: 'LD_LIBRARY_PATH' ifAbsent: [ '' ]) substrings: ':')
 		do: [ :path | 
 			| libraryPath |
@@ -238,7 +245,7 @@ ESpeakLibrary >> unix64LibraryName [
 ]
 
 { #category : #'accessing platform' }
-ESpeakLibrary >> win32LibraryName [
+EspeakLibrary >> win32LibraryName [
 	((OSEnvironment current at: 'Path' ifAbsent: [ '' ]) substrings: ';'), {'C:\Program Files (x86)\eSpeak'}
 		do: [ :path | 
 			| libraryPath |
