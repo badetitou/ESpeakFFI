@@ -107,6 +107,16 @@ ESpeakLibrary >> espeak_SynthText: text size: size position: position positionTy
 ]
 
 { #category : #'accessing platform' }
+ESpeakLibrary >> unix64LibraryName [
+	#('/usr/lib/i386-linux-gnu' '/usr/lib' '/usr/lib32') , ((OSEnvironment current at: 'LD_LIBRARY_PATH' ifAbsent: [ '' ]) substrings: ':')
+		do: [ :path | 
+			| libraryPath |
+			libraryPath := path asFileReference / 'libespeak.so'.
+			libraryPath exists ifTrue: [ ^ libraryPath fullName ] ].
+	self error: 'Cannot locate espeak library (libespeak.so). Please check if it installed on your system'
+]
+
+{ #category : #'accessing platform' }
 ESpeakLibrary >> win32LibraryName [
 	((OSEnvironment current at: 'Path' ifAbsent: [ '' ]) substrings: ';'), {'C:\Program Files (x86)\eSpeak'}
 		do: [ :path | 
