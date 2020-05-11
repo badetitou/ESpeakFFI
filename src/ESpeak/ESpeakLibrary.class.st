@@ -1,6 +1,9 @@
 Class {
 	#name : #ESpeakLibrary,
 	#superclass : #FFILibrary,
+	#instVars : [
+		'cb'
+	],
 	#category : #'ESpeak-Library'
 }
 
@@ -51,8 +54,39 @@ ESpeakLibrary class >> reset [
 ]
 
 { #category : #'as yet unclassified' }
+ESpeakLibrary class >> startUp: isImageStarting [
+
+	isImageStarting ifTrue: [ self reset ]
+]
+
+{ #category : #'as yet unclassified' }
+ESpeakLibrary >> espeak_Cancel [
+	"Stop immediately synthesis and audio output of the current text. When this
+   function returns, the audio output is fully stopped and the synthesizer is ready to
+   synthesize a new message.
+
+   Return: EE_OK: operation achieved
+	   EE_INTERNAL_ERROR."
+	self
+		ffiCall:
+			'Espeak_ERROR espeak_Cancel()'
+]
+
+{ #category : #'as yet unclassified' }
+ESpeakLibrary >> espeak_Char: character [
+	"Speak the name of the given character
+
+   Return: EE_OK: operation achieved
+           EE_BUFFER_FULL: the command can not be buffered;
+             you may try after a while to call the function again.
+	   EE_INTERNAL_ERROR."
+
+	self ffiCall: 'espeak_ERROR espeak_Char(Character character)'
+]
+
+{ #category : #'as yet unclassified' }
 ESpeakLibrary >> espeak_GetCurrentVoice [
-	self ffiCall: 'Espeak_VOICE * espeak_GetCurrentVoice()'
+	self ffiCall: 'Espeak_VOICE * espeak_GetCurrentVoice(void)'
 ]
 
 { #category : #'as yet unclassified' }
@@ -77,19 +111,63 @@ ESpeakLibrary >> espeak_InitializeWithOuput: output bufLength: buflength path: p
 
 { #category : #'as yet unclassified' }
 ESpeakLibrary >> espeak_IsPlaying [
+"/* Returns true if audio is played, false otherwise.
+*/"
 	self ffiCall: 'Boolean espeak_IsPlaying(void)'
 ]
 
 { #category : #'as yet unclassified' }
-ESpeakLibrary >> espeak_Key: keyName [
-	self
-		ffiCall:
-			'Espeak_ERROR espeak_Key(String keyName)'
+ESpeakLibrary >> espeak_Key: key_name [
+	"Speak the name of a keyboard key.
+   If key_name is a single character, it speaks the name of the character.
+   Otherwise, it speaks key_name as a text string.
+
+   Return: EE_OK: operation achieved
+           EE_BUFFER_FULL: the command can not be buffered;
+             you may try after a while to call the function again.
+	   EE_INTERNAL_ERROR."
+
+	self ffiCall: 'Espeak_ERROR espeak_Key(String key_name)'
+]
+
+{ #category : #'as yet unclassified' }
+ESpeakLibrary >> espeak_ListVoices: voice_spec [
+	"Reads the voice files from espeak-data/voices and creates an array of espeak_VOICE pointers.
+   The list is terminated by a NULL pointer
+
+   If voice_spec is NULL then all voices are listed.
+   If voice spec is given, then only the voices which are compatible with the voice_spec
+   are listed, and they are listed in preference order."
+
+	self ffiCall: 'Espeak_VOICE ** espeak_ListVoices(Espeak_VOICE * voice_spec)'
 ]
 
 { #category : #'as yet unclassified' }
 ESpeakLibrary >> espeak_SetSynthCallback: aSynthCallback [
 	self ffiCall: 'void espeak_SetSynthCallback(ESpeakSynthCallback aSynthCallback)'
+]
+
+{ #category : #'as yet unclassified' }
+ESpeakLibrary >> espeak_SetVoiceByName: name [
+"/* Searches for a voice with a matching 'name' field.  Language is not considered.
+   'name' is a UTF8 string.
+
+   Return: EE_OK: operation achieved
+           EE_BUFFER_FULL: the command can not be buffered;
+             you may try after a while to call the function again.
+	   EE_INTERNAL_ERROR.
+*/
+"
+	self ffiCall: 'Espeak_VOICE * espeak_SetVoiceByName(String name)'
+]
+
+{ #category : #'as yet unclassified' }
+ESpeakLibrary >> espeak_Synchronize [
+	"This function returns when all data have been spoken.
+   Return: EE_OK: operation achieved
+	   EE_INTERNAL_ERROR."
+
+	self ffiCall: 'Espeak_ERROR espeak_Synchronize()'
 ]
 
 { #category : #'as yet unclassified' }
@@ -104,6 +182,26 @@ ESpeakLibrary >> espeak_SynthText: text size: size position: position positionTy
 	int flags,
 	int * uniqueIdentifier,
 	void * userData)'
+]
+
+{ #category : #'as yet unclassified' }
+ESpeakLibrary >> espeak_Terminate [
+	"last function to be called."
+	self ffiCall: 'Espeak_ERROR espeak_Terminate(void)'
+]
+
+{ #category : #'as yet unclassified' }
+ESpeakLibrary >> initialize [
+	super initialize.
+	self
+		espeak_InitializeWithOuput: Espeak_AUDIO_OUTPUT AUDIO_OUTPUT_PLAYBACK
+		bufLength: 0
+		path: nil
+		andOptions: 0.
+
+
+	cb := ESpeakSynthCallback on: [ :a :b :c | 0 ].
+	self espeak_SetSynthCallback: cb
 ]
 
 { #category : #'accessing platform' }
