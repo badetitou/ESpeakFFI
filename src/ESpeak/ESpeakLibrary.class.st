@@ -139,7 +139,7 @@ ESpeakLibrary >> espeak_ListVoices: voice_spec [
    If voice spec is given, then only the voices which are compatible with the voice_spec
    are listed, and they are listed in preference order."
 
-	self ffiCall: 'Espeak_VOICE ** espeak_ListVoices(Espeak_VOICE * voice_spec)'
+	self ffiCall: 'Espeak_VOICE * * espeak_ListVoices(Espeak_VOICE * voice_spec)'
 ]
 
 { #category : #'as yet unclassified' }
