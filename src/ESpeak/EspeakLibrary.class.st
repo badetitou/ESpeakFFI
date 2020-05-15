@@ -235,6 +235,11 @@ EspeakLibrary >> initialize [
 ]
 
 { #category : #'accessing platform' }
+EspeakLibrary >> macLibraryName [
+	^ '/usr/local/Cellar/espeak/1.48.04_1/lib/libespeak.dylib'
+]
+
+{ #category : #'accessing platform' }
 EspeakLibrary >> unix64LibraryName [
 	#('/usr/lib/i386-linux-gnu' '/usr/lib' '/usr/lib32') , ((OSEnvironment current at: 'LD_LIBRARY_PATH' ifAbsent: [ '' ]) substrings: ':')
 		do: [ :path | 
